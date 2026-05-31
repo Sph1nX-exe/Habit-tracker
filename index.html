@@ -1,15 +1,19 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Daily Habit Tracker</title>
     <style>
+        /* ==========================================================================
+       1. COLOR VARIABLES & THEMING (Light / Dark Modes)
+       ========================================================================== */
         :root {
             --bg: #ffffff;
             --card: #f5f5f5;
-            --text: #111;
-            --border: #ddd;
+            --text: #111111;
+            --border: #dddddd;
             --heat0: #ebedf0;
             --heat1: #9be9a8;
             --heat2: #40c463;
@@ -23,7 +27,7 @@
                 --card: #161b22;
                 --text: #e6edf3;
                 --border: #30363d;
-                --heat0: #2d333b; 
+                --heat0: #2d333b;
                 --heat1: #0e4429;
                 --heat2: #006d32;
                 --heat3: #26a641;
@@ -31,11 +35,14 @@
             }
         }
 
+        /* ==========================================================================
+       2. GLOBAL & BASE LAYOUT STYLES
+       ========================================================================== */
         * {
             box-sizing: border-box;
             margin: 0;
             padding: 0;
-            font-family: system-ui, sans-serif;
+            font-family: system-ui, -apple-system, sans-serif;
         }
 
         body {
@@ -49,7 +56,10 @@
             margin: auto;
         }
 
-        h1 { margin-bottom: 20px; }
+        h1,
+        h2 {
+            margin-bottom: 20px;
+        }
 
         .card {
             background: var(--card);
@@ -59,13 +69,16 @@
             margin-bottom: 20px;
         }
 
+        /* ==========================================================================
+       3. INPUTS & COMPONENT ACTIONS
+       ========================================================================== */
         .input-row {
             display: flex;
             gap: 10px;
             flex-wrap: wrap;
         }
 
-        input[type="text"] {
+        input[type=text] {
             flex: 1;
             min-width: 200px;
             padding: 10px;
@@ -81,25 +94,70 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
-            transition: opacity 0.2s;
+            transition: opacity 0.2s ease;
         }
 
-        button:hover { opacity: 0.9; }
+        button:hover {
+            opacity: 0.9;
+        }
 
-        .add-btn    { background: #2ea043; color: white; }
-        .delete-btn { background: #da3633; color: white; }
-        .export-btn { background: #1f6feb; color: white; }
-        .import-btn { background: #6e40c9; color: white; }
+        .add-btn {
+            background: #2ea043;
+            color: #fff;
+        }
+
+        .delete-btn {
+            background: #da3633;
+            color: #fff;
+        }
+
+        .export-btn {
+            background: #1f6feb;
+            color: #fff;
+        }
+
+        .import-btn {
+            background: #6e40c9;
+            color: #fff;
+        }
+
+        .history-btn {
+            background: #58a6ff;
+            color: #fff;
+        }
+
+        .edit-btn {
+            background: #e3b341;
+            color: #111;
+        }
+
+        .edit-input {
+            padding: 4px 8px;
+            border-radius: 6px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: inherit;
+            font-size: 14px;
+            min-width: 120px;
+        }
+
+        /* ==========================================================================
+       4. HABIT RENDER LIST & WRAPPERS
+       ========================================================================== */
+        .task-wrapper {
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task-wrapper:last-child {
+            border-bottom: none;
+        }
 
         .task {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 10px 0;
-            border-bottom: 1px solid var(--border);
         }
-
-        .task:last-child { border-bottom: none; }
 
         .task-left {
             display: flex;
@@ -107,12 +165,25 @@
             align-items: center;
         }
 
-        .heatmap {
-            overflow-x: auto;
-            padding: 4px 0 8px 0;
+        .task-name {
+            word-break: break-word;
         }
 
-        /* Enforces structural grid boundaries: exactly 16 columns of 7 items */
+        .task-actions {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        /* ==========================================================================
+       5. HEATMAP & ACCORDION
+       ========================================================================== */
+        .heatmap {
+            overflow-x: auto;
+            padding: 4px 0 8px;
+        }
+
         .grid {
             display: grid;
             grid-template-rows: repeat(7, 16px);
@@ -129,20 +200,46 @@
         }
 
         .day.spacer {
-            opacity: 0.15;
+            opacity: .15;
             pointer-events: none;
         }
 
-        .level0 { background: var(--heat0); }
-        .level1 { background: var(--heat1); }
-        .level2 { background: var(--heat2); }
-        .level3 { background: var(--heat3); }
-        .level4 { background: var(--heat4); }
+        .level0 {
+            background: var(--heat0);
+        }
 
-        .stats {
-            margin-top: 10px;
-            font-size: 14px;
-            opacity: 0.8;
+        .level1 {
+            background: var(--heat1);
+        }
+
+        .level2 {
+            background: var(--heat2);
+        }
+
+        .level3 {
+            background: var(--heat3);
+        }
+
+        .level4 {
+            background: var(--heat4);
+        }
+
+        .habit-stats {
+            font-size: 12px;
+            opacity: .7;
+            padding: 4px 0 8px 0;
+        }
+
+        .habit-heatmap-panel {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+            padding: 0;
+        }
+
+        .habit-heatmap-panel.open {
+            max-height: 500px;
+            padding: 8px 0 4px;
         }
 
         .backup-row {
@@ -154,244 +251,491 @@
 
         .backup-note {
             font-size: 12px;
-            opacity: 0.6;
+            opacity: .6;
             margin-top: 10px;
             line-height: 1.5;
         }
-
-        @media(max-width:600px) {
-            .grid {
-                grid-template-rows: repeat(7, 14px);
-                grid-auto-columns: 14px;
-                gap: 3px;
-            }
-            .day {
-                width: 14px;
-                height: 14px;
-            }
-        }
     </style>
 </head>
+
 <body>
-<div class="container">
 
-    <h1>Daily Habit Tracker</h1>
+    <div class="container">
+        <h1>Daily Habit Tracker</h1>
 
-    <div class="card">
-        <div class="input-row">
-            <input id="taskInput" type="text" placeholder="Add a habit..."
-                onkeydown="if(event.key==='Enter') addTask()">
-            <button class="add-btn" onclick="addTask()">Add</button>
+        <div class="card" id="globalSummaryCard" style="display: none;">
+            <h2 style="font-size: 1.25rem; margin-bottom: 8px;">Global Activity Dashboard</h2>
+            <div class="heatmap">
+                <div class="grid" id="globalGrid"></div>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="input-row">
+                <input id="taskInput" type="text" placeholder="Add a habit..."
+                    onkeydown="if(event.key==='Enter') addTask()" aria-label="New habit name">
+                <button class="add-btn" onclick="addTask()">Add Habit</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 12px">Habits</h2>
+            <div id="taskList"></div>
+        </div>
+
+        <div class="card">
+            <h2 style="margin-bottom: 12px">Backup & Restore</h2>
+            <div class="backup-row">
+                <button class="export-btn" onclick="exportData()">Export backup</button>
+                <button class="import-btn" onclick="document.getElementById('importFile').click()">Import
+                    backup</button>
+                <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
+            </div>
+            <p class="backup-note">
+                Export saves all your habits and full tick history as a .json file on your device.<br>
+                Import restores everything from that file.
+            </p>
         </div>
     </div>
 
-    <div class="card">
-        <h2 style="margin-bottom:12px">Today's Habits</h2>
-        <div id="taskList"></div>
-    </div>
+    <script>
+        /* ==========================================================================
+           6. CORE ARCHITECTURE STATE MANAGEMENT
+           ========================================================================== */
+        const STORAGE_KEY = "habitTrackerData";
 
-    <div class="card">
-        <h2 style="margin-bottom:12px">Last 16 Weeks</h2>
-        <div class="heatmap">
-            <div class="grid" id="heatmap"></div>
-        </div>
-        <div class="stats" id="stats"></div>
-    </div>
-
-    <div class="card">
-        <h2 style="margin-bottom:12px">Backup & Restore</h2>
-        <div class="backup-row">
-            <button class="export-btn" onclick="exportData()">Export backup</button>
-            <button class="import-btn" onclick="document.getElementById('importFile').click()">Import backup</button>
-            <input type="file" id="importFile" accept=".json" style="display:none" onchange="importData(event)">
-        </div>
-        <p class="backup-note">
-            Export saves all your habits and full tick history as a .json file on your device.<br>
-            Import restores everything from that file. Do this weekly to protect your data.
-        </p>
-    </div>
-
-</div>
-<script>
-    const STORAGE_KEY = "habitTrackerData";
-
-    let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
-        tasks: [],
-        log: {}
-    };
-
-    function save() {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-    }
-
-    function formatDate(dateObj) {
-        const year = dateObj.getFullYear();
-        const month = String(dateObj.getMonth() + 1).padStart(2, '0');
-        const day = String(dateObj.getDate()).padStart(2, '0');
-        return `${year}-${month}-${day}`;
-    }
-
-    function today() {
-        return formatDate(new Date());
-    }
-
-    function addTask() {
-        const input = document.getElementById("taskInput");
-        const name = input.value.trim();
-        if (!name) return;
-        data.tasks.push({ id: Date.now().toString(), name });
-        input.value = "";
-        save();
-        render();
-    }
-
-    function deleteTask(id) {
-        data.tasks = data.tasks.filter(t => t.id !== id);
-        Object.keys(data.log).forEach(date => {
-            if (data.log[date]) delete data.log[date][id];
-        });
-        save();
-        render();
-    }
-
-    function toggleTask(id, checked) {
-        const date = today();
-        if (!data.log[date]) data.log[date] = {};
-        data.log[date][id] = checked;
-        save();
-        renderHeatmap();
-    }
-
-    function render() {
-        const list = document.getElementById("taskList");
-        list.innerHTML = "";
-        const date = today();
-        if (!data.log[date]) data.log[date] = {};
-
-        if (data.tasks.length === 0) {
-            list.innerHTML = `<p style="opacity:0.6; padding:10px 0;">No habits added yet. Add one above!</p>`;
+        let data;
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            data = raw ? JSON.parse(raw) : { tasks: [], log: {} };
+            if (!data.tasks || !data.log) throw new Error();
+        } catch (e) {
+            data = { tasks: [], log: {} };
         }
 
-        data.tasks.forEach(task => {
-            const row = document.createElement("div");
-            row.className = "task";
-            row.innerHTML = `
-                <div class="task-left">
-                    <input type="checkbox"
-                        ${data.log[date][task.id] ? "checked" : ""}
-                        onchange="toggleTask('${task.id}', this.checked)">
-                    <span>${task.name}</span>
-                </div>
-                <button class="delete-btn" onclick="deleteTask('${task.id}')">Delete</button>
-            `;
-            list.appendChild(row);
-        });
+        let openHeatmapId = null;
+        let editingTaskId = null;
+        let lastCacheKey = "";
 
-        renderHeatmap();
-    }
-
-    function renderHeatmap() {
-        const heatmap = document.getElementById("heatmap");
-        heatmap.innerHTML = "";
-
-        let completedDays = 0;
-
-        const todayObj = new Date();
-        const currentDayOfWeek = todayObj.getDay(); // Sun = 0, Mon = 1 ... Sat = 6
-        
-        const totalGridSlots = 112; // 16 columns * 7 rows precisely 
-        const emptyTrailingSlots = 6 - currentDayOfWeek;
-        const realDaysToRender = totalGridSlots - emptyTrailingSlots;
-
-        const cellsToRender = [];
-        
-        // Add actual history items
-        for (let i = realDaysToRender - 1; i >= 0; i--) {
-            const d = new Date();
-            d.setDate(d.getDate() - i);
-            cellsToRender.push({ type: 'day', dateStr: formatDate(d) });
+        function generateCacheKey() {
+            return JSON.stringify(data.tasks) + "_" + JSON.stringify(data.log) + "_" + today();
         }
 
-        // Add trailing placeholder padding elements to guarantee symmetrical bounding edges
-        for (let i = 0; i < emptyTrailingSlots; i++) {
-            cellsToRender.push({ type: 'spacer' });
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         }
 
-        cellsToRender.forEach(cellData => {
-            const cell = document.createElement("div");
+        function formatDate(d) {
+            return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + String(d.getDate()).padStart(2, "0");
+        }
 
-            if (cellData.type === 'spacer') {
-                cell.className = "day level0 spacer";
-                heatmap.appendChild(cell);
+        function today() {
+            return formatDate(new Date());
+        }
+
+        function escapeHTML(str) {
+            return str.replace(/[&<>"']/g, match => {
+                const escapeMap = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#x27;' };
+                return escapeMap[match];
+            });
+        }
+
+        function generateUniqueId() {
+            if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+                return crypto.randomUUID();
+            }
+            return Date.now() + "-" + Math.floor(Math.random() * 1000000);
+        }
+
+        /* ==========================================================================
+           7. OPERATIONS MANAGEMENT & INTERACTION HANDLERS
+           ========================================================================== */
+        function addTask() {
+            const input = document.getElementById("taskInput");
+            const name = input.value.trim();
+            if (!name) return;
+
+            const isDuplicate = data.tasks.some(t => t.name.toLowerCase() === name.toLowerCase());
+            if (isDuplicate) {
+                alert("A habit with this name already exists.");
                 return;
             }
 
-            const date = cellData.dateStr;
-            let done = 0;
-            let loggedTotalForDay = data.tasks.length;
+            data.tasks.push({ id: generateUniqueId(), name: name });
+            input.value = "";
+            save();
+            render();
+        }
 
-            if (data.log[date]) {
-                done = Object.values(data.log[date]).filter(Boolean).length;
-                const recordedKeys = Object.keys(data.log[date]).length;
-                if (recordedKeys > loggedTotalForDay) loggedTotalForDay = recordedKeys;
+        function deleteTask(id) {
+            if (!confirm("Are you sure you want to delete this habit?")) return;
+
+            if (editingTaskId === id) editingTaskId = null;
+            if (openHeatmapId === id) openHeatmapId = null;
+
+            data.tasks = data.tasks.filter(t => t.id !== id);
+
+            Object.keys(data.log).forEach(date => {
+                if (data.log[date]) {
+                    delete data.log[date][id];
+                    if (Object.keys(data.log[date]).length === 0) {
+                        delete data.log[date];
+                    }
+                }
+            });
+
+            save();
+            render();
+        }
+
+        function toggleTask(id, checked) {
+            const date = today();
+            if (!data.log[date]) data.log[date] = {};
+
+            data.log[date][id] = checked;
+
+            if (!checked) {
+                delete data.log[date][id];
+                if (Object.keys(data.log[date]).length === 0) {
+                    delete data.log[date];
+                }
             }
 
-            let level = 0;
-            if (loggedTotalForDay > 0) {
-                const ratio = done / loggedTotalForDay;
-                if (ratio > 0)     level = 1;
-                if (ratio >= 0.25) level = 2;
-                if (ratio >= 0.5)  level = 3;
-                if (ratio >= 0.9)  level = 4;
+            save();
+
+            if (openHeatmapId === id) {
+                renderHabitHeatmap(id);
+            }
+            renderGlobalHeatmap(true);
+        }
+
+        function calculateCurrentStreak(taskId) {
+            let currentStreak = 0;
+            let checkDate = new Date();
+
+            const todayStr = formatDate(checkDate);
+            const completedToday = data.log[todayStr]?.[taskId] === true;
+
+            if (!completedToday) {
+                checkDate.setDate(checkDate.getDate() - 1);
             }
 
-            if (level > 0) completedDays++;
+            while (true) {
+                const dateStr = formatDate(checkDate);
+                if (data.log[dateStr]?.[taskId] === true) {
+                    currentStreak++;
+                    checkDate.setDate(checkDate.getDate() - 1);
+                } else {
+                    break;
+                }
+            }
+            return currentStreak;
+        }
 
-            cell.className = `day level${level}`;
-            cell.title = `${date} (${done}/${loggedTotalForDay} completed)`;
-            heatmap.appendChild(cell);
-        });
+        /* ==========================================================================
+           8. COMPONENT RENDER ENGINE
+           ========================================================================== */
+        function renderGlobalHeatmap(force = false) {
+            const globalCard = document.getElementById("globalSummaryCard");
+            const grid = document.getElementById("globalGrid");
 
-        document.getElementById("stats").textContent =
-            `${completedDays} active days in the last 16 weeks`;
-    }
+            if (!data.tasks.length) {
+                globalCard.style.display = "none";
+                return;
+            }
 
-    function exportData() {
-        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
-        const url = URL.createObjectURL(blob);
-        const a = document.createElement("a");
-        a.href = url;
-        a.download = "habit-backup-" + today() + ".json";
-        a.click();
-        URL.revokeObjectURL(url);
-    }
+            globalCard.style.display = "block";
 
-    function importData(event) {
-        const file = event.target.files[0];
-        if (!file) return;
-        const reader = new FileReader();
-        reader.onload = function(e) {
-            try {
-                const imported = JSON.parse(e.target.result);
-                if (!imported.tasks || !imported.log) {
-                    alert("Invalid backup file. Make sure you're using a file exported from this app.");
+            const currentKey = generateCacheKey();
+            if (!force && currentKey === lastCacheKey) return;
+            lastCacheKey = currentKey;
+
+            grid.innerHTML = "";
+
+            const totalGridSlots = 112;
+            const currentDayOfWeek = new Date().getDay();
+            const emptyTrailingSlots = 6 - currentDayOfWeek;
+            const realDaysToRender = totalGridSlots - emptyTrailingSlots;
+
+            for (let i = realDaysToRender - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const ds = formatDate(d);
+
+                let completedCount = 0;
+                if (data.log[ds]) {
+                    data.tasks.forEach(t => {
+                        if (data.log[ds][t.id] === true) completedCount++;
+                    });
+                }
+
+                let intensity = 0;
+                if (completedCount > 0 && data.tasks.length > 0) {
+                    const ratio = completedCount / data.tasks.length;
+                    if (ratio <= 0.25) intensity = 1;
+                    else if (ratio <= 0.5) intensity = 2;
+                    else if (ratio <= 0.75) intensity = 3;
+                    else intensity = 4;
+                }
+
+                const cell = document.createElement("div");
+                cell.className = `day level${intensity}`;
+                cell.title = `${ds} ${completedCount}/${data.tasks.length}`;
+                grid.appendChild(cell);
+            }
+
+            for (let i = 0; i < emptyTrailingSlots; i++) {
+                const cell = document.createElement("div");
+                cell.className = "day level0 spacer";
+                grid.appendChild(cell);
+            }
+        }
+
+        function renderHabitHeatmap(taskId) {
+            const grid = document.getElementById("grid-" + taskId);
+            const stats = document.getElementById("hstats-" + taskId);
+            if (!grid) return;
+            grid.innerHTML = "";
+
+            let totalCompleted = 0;
+            const totalGridSlots = 112;
+            const currentDayOfWeek = new Date().getDay();
+            const emptyTrailingSlots = 6 - currentDayOfWeek;
+            const realDaysToRender = totalGridSlots - emptyTrailingSlots;
+
+            for (let i = realDaysToRender - 1; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                const ds = formatDate(d);
+                const done = data.log[ds]?.[taskId] === true;
+
+                if (done) totalCompleted++;
+
+                const cell = document.createElement("div");
+                cell.className = `day ${done ? "level4" : "level0"}`;
+                cell.title = `${ds} ${done ? "✓" : "✗"}`;
+                grid.appendChild(cell);
+            }
+
+            for (let i = 0; i < emptyTrailingSlots; i++) {
+                const cell = document.createElement("div");
+                cell.className = "day level0 spacer";
+                grid.appendChild(cell);
+            }
+
+            stats.textContent = `${totalCompleted} days completed in the last 16 weeks`;
+        }
+
+        function buildTaskWrapper(id) {
+            const t = data.tasks.find(x => x.id === id);
+            const d = today();
+            const w = document.createElement("div");
+            w.className = "task-wrapper";
+            w.id = "wrapper-" + id;
+
+            const editing = editingTaskId === id;
+            const isChecked = data.log[d]?.[id] ? "checked" : "";
+
+            w.innerHTML = `
+      <div class="task">
+        <div class="task-left">
+          <input type="checkbox" id="chk-${id}" ${isChecked} onchange="toggleTask('${id}', this.checked)" aria-label="Mark habit as completed">
+          <div class="task-text-container" id="container-${id}">
+            <label for="chk-${id}" class="task-name" id="label-${id}">${escapeHTML(t.name)}</label>
+          </div>
+        </div>
+        <div class="task-actions">
+          <button class="history-btn" onclick="toggleHistory('${id}', this)" aria-label="Toggle history panel">▸ History</button>
+          <button class="edit-btn" onclick="handleEdit('${id}')" aria-label="Edit name">${editing ? "Save" : "Edit"}</button>
+          <button class="delete-btn" onclick="deleteTask('${id}')" aria-label="Delete habit">Delete</button>
+        </div>
+      </div>
+      <div class="habit-heatmap-panel" id="panel-${id}">
+        <div class="heatmap"><div class="grid" id="grid-${id}"></div></div>
+        <div class="habit-stats" id="hstats-${id}"></div>
+      </div>
+    `;
+
+            if (editing) {
+                const container = w.querySelector(`#container-${id}`);
+                const label = w.querySelector(`#label-${id}`);
+
+                const input = document.createElement("input");
+                input.className = "edit-input";
+                input.id = `edit-input-${id}`;
+                input.type = "text";
+                input.value = t.name;
+                input.setAttribute("aria-label", "Edit habit name input");
+
+                input.onkeydown = e => {
+                    if (e.key === "Enter") commitEdit(id);
+                    if (e.key === "Escape") cancelEdit(id);
+                };
+
+                container.replaceChild(input, label);
+                setTimeout(() => input.focus(), 0);
+            }
+
+            return w;
+        }
+
+        function rerenderTaskWrapper(id) {
+            const w = document.getElementById("wrapper-" + id);
+            if (!w) return;
+
+            const nw = buildTaskWrapper(id);
+            w.replaceWith(nw);
+
+            if (openHeatmapId === id) {
+                document.getElementById("panel-" + id)?.classList.add("open");
+                const b = document.querySelector(`#wrapper-${id} .history-btn`);
+                if (b) b.textContent = "▾ History";
+                renderHabitHeatmap(id);
+            }
+        }
+
+        function handleEdit(id) {
+            if (editingTaskId && editingTaskId !== id) commitEdit(editingTaskId);
+            if (editingTaskId === id) return commitEdit(id);
+
+            editingTaskId = id;
+            rerenderTaskWrapper(id);
+        }
+
+        function commitEdit(id) {
+            const inp = document.getElementById(`edit-input-${id}`);
+            const t = data.tasks.find(x => x.id === id);
+
+            if (inp && t) {
+                const newName = inp.value.trim();
+
+                if (!newName) {
+                    alert("Habit name cannot be left blank.");
+                    cancelEdit(id);
                     return;
                 }
-                if (confirm("This will replace all current data with the backup. Continue?")) {
-                    data = imported;
+
+                const isDuplicate = data.tasks.some(x => x.id !== id && x.name.toLowerCase() === newName.toLowerCase());
+                if (isDuplicate) {
+                    alert("Another habit already uses this name.");
+                    return;
+                }
+
+                t.name = newName;
+            }
+            editingTaskId = null;
+            save();
+            rerenderTaskWrapper(id);
+            renderGlobalHeatmap(true);
+        }
+
+        function cancelEdit(id) {
+            editingTaskId = null;
+            rerenderTaskWrapper(id);
+        }
+
+        function toggleHistory(id, btn) {
+            if (openHeatmapId && openHeatmapId !== id) {
+                document.getElementById("panel-" + openHeatmapId)?.classList.remove("open");
+                const ob = document.querySelector(`#wrapper-${openHeatmapId} .history-btn`);
+                if (ob) ob.textContent = "▸ History";
+            }
+
+            const panel = document.getElementById("panel-" + id);
+            if (openHeatmapId === id) {
+                panel.classList.remove("open");
+                btn.textContent = "▸ History";
+                openHeatmapId = null;
+                return;
+            }
+
+            openHeatmapId = id;
+            renderHabitHeatmap(id);
+            panel.classList.add("open");
+            btn.textContent = "▾ History";
+        }
+
+        function render() {
+            const list = document.getElementById("taskList");
+            list.innerHTML = "";
+
+            if (!data.tasks.length) {
+                list.innerHTML = '<p style="opacity:.6;padding:10px 0">No habits added yet. Add one above!</p>';
+                document.getElementById("globalSummaryCard").style.display = "none";
+                return;
+            }
+            data.tasks.forEach(t => list.appendChild(buildTaskWrapper(t.id)));
+            renderGlobalHeatmap();
+        }
+
+        /* ==========================================================================
+           9. BACKUP EXPORT & IMPORT
+           ========================================================================== */
+        function exportData() {
+            const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = "habit-backup-" + today() + ".json";
+            a.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function importData(e) {
+            const fileInput = e.target;
+            const f = fileInput.files[0];
+            if (!f) return;
+
+            const r = new FileReader();
+            r.onload = x => {
+                try {
+                    const parsed = JSON.parse(x.target.result);
+
+                    if (!parsed || !Array.isArray(parsed.tasks) || typeof parsed.log !== 'object' || parsed.log === null) {
+                        throw new Error("Invalid schema structure.");
+                    }
+
+                    const logEntriesValid = Object.values(parsed.log).every(day =>
+                        typeof day === "object" && day !== null && !Array.isArray(day)
+                    );
+                    if (!logEntriesValid) {
+                        throw new Error("Log configuration properties are malformed.");
+                    }
+
+                    const exactTaskMapValid = parsed.tasks.every(t =>
+                        t && typeof t.id === 'string' && typeof t.name === 'string' && t.name.trim() !== ""
+                    );
+                    if (!exactTaskMapValid) {
+                        throw new Error("Tasks array contains malformed elements.");
+                    }
+
+                    const namesSeen = new Set();
+                    for (let i = 0; i < parsed.tasks.length; i++) {
+                        const lowerName = parsed.tasks[i].name.toLowerCase();
+                        if (namesSeen.has(lowerName)) {
+                            throw new Error("Backup file contains duplicate habit names.");
+                        }
+                        namesSeen.add(lowerName);
+                    }
+
+                    openHeatmapId = null;
+                    editingTaskId = null;
+
+                    data = parsed;
                     save();
                     render();
-                    alert("Backup restored successfully!");
+                } catch (err) {
+                    alert("Error importing data: " + (err.message || "Ensure file is a valid JSON template configuration."));
+                } finally {
+                    fileInput.value = "";
                 }
-            } catch(err) {
-                alert("Could not read the file. Make sure it's a valid backup.");
-            }
-        };
-        reader.readAsText(file);
-        event.target.value = "";
-    }
+            };
+            r.readAsText(f);
+        }
 
-    render();
-</script>
+        render();
+    </script>
+
 </body>
+
 </html>
