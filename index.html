@@ -23,7 +23,7 @@
                 --card: #161b22;
                 --text: #e6edf3;
                 --border: #30363d;
-                --heat0: #2d333b;
+                --heat0: #2d333b; 
                 --heat1: #0e4429;
                 --heat2: #006d32;
                 --heat3: #26a641;
@@ -81,7 +81,10 @@
             border-radius: 8px;
             cursor: pointer;
             font-size: 14px;
+            transition: opacity 0.2s;
         }
+
+        button:hover { opacity: 0.9; }
 
         .add-btn    { background: #2ea043; color: white; }
         .delete-btn { background: #da3633; color: white; }
@@ -109,6 +112,7 @@
             padding: 4px 0 8px 0;
         }
 
+        /* Enforces structural grid boundaries: exactly 16 columns of 7 items */
         .grid {
             display: grid;
             grid-template-rows: repeat(7, 16px);
@@ -173,7 +177,6 @@
 
     <h1>Daily Habit Tracker</h1>
 
-    <!-- Add habit -->
     <div class="card">
         <div class="input-row">
             <input id="taskInput" type="text" placeholder="Add a habit..."
@@ -182,13 +185,11 @@
         </div>
     </div>
 
-    <!-- Today's list -->
     <div class="card">
         <h2 style="margin-bottom:12px">Today's Habits</h2>
         <div id="taskList"></div>
     </div>
 
-    <!-- Heatmap -->
     <div class="card">
         <h2 style="margin-bottom:12px">Last 16 Weeks</h2>
         <div class="heatmap">
@@ -197,7 +198,6 @@
         <div class="stats" id="stats"></div>
     </div>
 
-    <!-- Backup -->
     <div class="card">
         <h2 style="margin-bottom:12px">Backup & Restore</h2>
         <div class="backup-row">
@@ -297,18 +297,22 @@
         let completedDays = 0;
 
         const todayObj = new Date();
-        const currentDayOfWeek = todayObj.getDay();
-        const totalDaysToShow = 112;
-        const pastDaysToRender = totalDaysToShow - (currentDayOfWeek + 1);
+        const currentDayOfWeek = todayObj.getDay(); // Sun = 0, Mon = 1 ... Sat = 6
+        
+        const totalGridSlots = 112; // 16 columns * 7 rows precisely 
+        const emptyTrailingSlots = 6 - currentDayOfWeek;
+        const realDaysToRender = totalGridSlots - emptyTrailingSlots;
 
         const cellsToRender = [];
-        for (let i = pastDaysToRender; i >= 0; i--) {
+        
+        // Add actual history items
+        for (let i = realDaysToRender - 1; i >= 0; i--) {
             const d = new Date();
             d.setDate(d.getDate() - i);
             cellsToRender.push({ type: 'day', dateStr: formatDate(d) });
         }
 
-        const emptyTrailingSlots = 6 - currentDayOfWeek;
+        // Add trailing placeholder padding elements to guarantee symmetrical bounding edges
         for (let i = 0; i < emptyTrailingSlots; i++) {
             cellsToRender.push({ type: 'spacer' });
         }
@@ -335,7 +339,7 @@
             let level = 0;
             if (loggedTotalForDay > 0) {
                 const ratio = done / loggedTotalForDay;
-                if (ratio > 0)    level = 1;
+                if (ratio > 0)     level = 1;
                 if (ratio >= 0.25) level = 2;
                 if (ratio >= 0.5)  level = 3;
                 if (ratio >= 0.9)  level = 4;
