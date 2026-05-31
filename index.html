@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daily Habit Tracker</title>
+
+    <style>
+        :root {
+            --bg: #ffffff;
+            --card: #f5f5f5;
+            --text: #111;
+            --border: #ddd;
+            --heat0: #ebedf0;
+            --heat1: #9be9a8;
+            --heat2: #40c463;
+            --heat3: #30a14e;
+            --heat4: #216e39;
+        }
+
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0d1117;
+                --card: #161b22;
+                --text: #e6edf3;
+                --border: #30363d;
+                --heat0: #2d333b;
+                --heat1: #0e4429;
+                --heat2: #006d32;
+                --heat3: #26a641;
+                --heat4: #39d353;
+            }
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: system-ui, sans-serif;
+        }
+
+        body {
+            background: var(--bg);
+            color: var(--text);
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 900px;
+            margin: auto;
+        }
+
+        h1 {
+            margin-bottom: 20px;
+        }
+
+        .card {
+            background: var(--card);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 16px;
+            margin-bottom: 20px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        input[type="text"] {
+            flex: 1;
+            min-width: 200px;
+            padding: 10px;
+            border-radius: 8px;
+            border: 1px solid var(--border);
+            background: transparent;
+            color: inherit;
+        }
+
+        button {
+            padding: 10px 14px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .add-btn {
+            background: #2ea043;
+            color: white;
+        }
+
+        .task {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 10px 0;
+            border-bottom: 1px solid var(--border);
+        }
+
+        .task:last-child {
+            border-bottom: none;
+        }
+
+        .task-left {
+            display: flex;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .delete-btn {
+            background: #da3633;
+            color: white;
+        }
+
+        .heatmap {
+            overflow-x: auto;
+            padding: 4px 0 8px 0;
+        }
+
+        /* Fixed Layout Block Alignment rules */
+        .grid {
+            display: grid;
+            grid-template-rows: repeat(7, 16px);
+            grid-auto-flow: column;
+            grid-auto-columns: 16px;
+            gap: 4px;
+            width: max-content;
+        }
+
+        .day {
+            width: 16px;
+            height: 16px;
+            border-radius: 3px;
+        }
+
+        /* Hidden spacer blocks used to preserve grid-column synchronization */
+        .day.spacer {
+            opacity: 0.15;
+            pointer-events: none;
+        }
+
+        .level0 {
+            background: var(--heat0);
+        }
+
+        .level1 {
+            background: var(--heat1);
+        }
+
+        .level2 {
+            background: var(--heat2);
+        }
+
+        .level3 {
+            background: var(--heat3);
+        }
+
+        .level4 {
+            background: var(--heat4);
+        }
+
+        .stats {
+            margin-top: 10px;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        @media(max-width:600px) {
+            .grid {
+                grid-template-rows: repeat(7, 14px);
+                grid-auto-columns: 14px;
+                gap: 3px;
+            }
+
+            .day {
+                width: 14px;
+                height: 14px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="container">
+
+        <h1>Daily Habit Tracker</h1>
+
+        <div class="card">
+            <div class="input-row">
+                <input id="taskInput" type="text" placeholder="Add a habit..."
+                    onkeydown="if(event.key==='Enter') addTask()">
+                <button class="add-btn" onclick="addTask()">Add</button>
+            </div>
+        </div>
+
+        <div class="card">
+            <h2>Today's Habits</h2>
+            <div id="taskList"></div>
+        </div>
+
+        <div class="card">
+            <h2>Last 16 Weeks</h2>
+            <div class="heatmap">
+                <div class="grid" id="heatmap"></div>
+            </div>
+            <div class="stats" id="stats"></div>
+        </div>
+
+    </div>
+
+    <script>
+        const STORAGE_KEY = "habitTrackerData";
+
+        let data = JSON.parse(localStorage.getItem(STORAGE_KEY)) || {
+            tasks: [],
+            log: {}
+        };
+
+        function save() {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        }
+
+        function formatDate(dateObj) {
+            const year = dateObj.getFullYear();
+            const month = String(dateObj.getMonth() + 1).padStart(2, '0');
+            const day = String(dateObj.getDate()).padStart(2, '0');
+            return `${year}-${month}-${day}`;
+        }
+
+        function today() {
+            return formatDate(new Date());
+        }
+
+        function addTask() {
+            const input = document.getElementById("taskInput");
+            const name = input.value.trim();
+
+            if (!name) return;
+
+            data.tasks.push({
+                id: Date.now().toString(),
+                name
+            });
+
+            input.value = "";
+            save();
+            render();
+        }
+
+        function deleteTask(id) {
+            data.tasks = data.tasks.filter(t => t.id !== id);
+
+            Object.keys(data.log).forEach(date => {
+                if (data.log[date]) {
+                    delete data.log[date][id];
+                }
+            });
+
+            save();
+            render();
+        }
+
+        function toggleTask(id, checked) {
+            const date = today();
+
+            if (!data.log[date])
+                data.log[date] = {};
+
+            data.log[date][id] = checked;
+
+            save();
+            renderHeatmap();
+        }
+
+        function render() {
+            const list = document.getElementById("taskList");
+            list.innerHTML = "";
+
+            const date = today();
+
+            if (!data.log[date])
+                data.log[date] = {};
+
+            if (data.tasks.length === 0) {
+                list.innerHTML = `<p style="opacity:0.6; padding:10px 0;">No habits added yet. Add one above!</p>`;
+            }
+
+            data.tasks.forEach(task => {
+                const row = document.createElement("div");
+                row.className = "task";
+
+                row.innerHTML = `
+            <div class="task-left">
+                <input type="checkbox" 
+                ${data.log[date][task.id] ? "checked" : ""}
+                onchange="toggleTask('${task.id}', this.checked)">
+                <span>${task.name}</span>
+            </div>
+
+            <button class="delete-btn" 
+            onclick="deleteTask('${task.id}')">
+                Delete
+            </button>
+        `;
+
+                list.appendChild(row);
+            });
+
+            renderHeatmap();
+        }
+
+        function renderHeatmap() {
+            const heatmap = document.getElementById("heatmap");
+            heatmap.innerHTML = "";
+
+            let completedDays = 0;
+
+            // 1. Align the grid timeline context to start at the top of the column block (Sunday)
+            const todayObj = new Date();
+            const currentDayOfWeek = todayObj.getDay(); // Sunday = 0, Monday = 1, etc.
+
+            // Calculate total days required to display exactly 16 complete columns (16 weeks * 7 days = 112 total days)
+            // We add spacer slots at the end to finish out the trailing current week column block cleanly
+            const totalDaysToShow = 112;
+            const pastDaysToRender = totalDaysToShow - (currentDayOfWeek + 1);
+
+            const cellsToRender = [];
+            for (let i = pastDaysToRender; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                cellsToRender.push({ type: 'day', dateStr: formatDate(d) });
+            }
+
+            // Append empty trailing slots to square up the last week column perfectly
+            const emptyTrailingSlots = 6 - currentDayOfWeek;
+            for (let i = 0; i < emptyTrailingSlots; i++) {
+                cellsToRender.push({ type: 'spacer' });
+            }
+
+            // 2. Build DOM structures cleanly across the layout arrays
+            cellsToRender.forEach(cellData => {
+                const cell = document.createElement("div");
+
+                if (cellData.type === 'spacer') {
+                    cell.className = "day level0 spacer";
+                    heatmap.appendChild(cell);
+                    return;
+                }
+
+                const date = cellData.dateStr;
+                let done = 0;
+                let loggedTotalForDay = data.tasks.length;
+
+                if (data.log[date]) {
+                    done = Object.values(data.log[date]).filter(Boolean).length;
+                    const recordedKeys = Object.keys(data.log[date]).length;
+                    if (recordedKeys > loggedTotalForDay) {
+                        loggedTotalForDay = recordedKeys;
+                    }
+                }
+
+                let level = 0;
+                if (loggedTotalForDay > 0) {
+                    const ratio = done / loggedTotalForDay;
+                    if (ratio > 0) level = 1;
+                    if (ratio >= 0.25) level = 2;
+                    if (ratio >= 0.5) level = 3;
+                    if (ratio >= 0.9) level = 4;
+                }
+
+                if (level > 0) completedDays++;
+
+                cell.className = `day level${level}`;
+                cell.title = `${date} (${done}/${loggedTotalForDay} completed)`;
+                heatmap.appendChild(cell);
+            });
+
+            document.getElementById("stats").textContent =
+                `${completedDays} active days in the last 16 weeks`;
+        }
+
+        render();
+    </script>
+
+</body>
+
+</html>
